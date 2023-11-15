@@ -1,0 +1,72 @@
+
+import matplotlib.pyplot as plt 
+
+from sklearn import datasets 
+
+from sklearn.cluster import KMeans 
+
+from sklearn import preprocessing
+
+from sklearn.mixture import GaussianMixture 
+
+import pandas as pd
+
+import numpy as np
+ 
+iris = datasets.load_iris()
+
+X = pd.DataFrame(iris.data, columns=['Sepal_Length', 'Sepal_Width', 'Petal_Length', 'Petal_Width'])
+
+y = pd.DataFrame(iris.target, columns=['Targets'])
+ 
+plt.figure(figsize=(14, 7))
+ 
+plt.subplot(1, 3, 1)
+
+plt.scatter(X.Petal_Length, X.Petal_Width, c=iris.target, cmap='viridis', s=40) 
+
+plt.title('Real Clusters')
+
+plt.xlabel('Petal Length') 
+
+plt.ylabel('Petal Width')
+ 
+model = KMeans(n_clusters=3)
+
+model.fit(X)
+
+kmeans_labels = model.labels_
+ 
+plt.subplot(1, 3, 2)
+
+plt.scatter(X.Petal_Length, X.Petal_Width, c=kmeans_labels, cmap='viridis', s=40) 
+
+plt.title('K-Means Clustering')
+
+plt.xlabel('Petal Length') 
+
+plt.ylabel('Petal Width')
+ 
+scaler = preprocessing.StandardScaler() 
+
+xs = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
+
+gmm = GaussianMixture(n_components=3) 
+
+gmm.fit(xs)
+
+gmm_labels = gmm.predict(xs)
+ 
+plt.subplot(1, 3, 3)
+
+plt.scatter(X.Petal_Length, X.Petal_Width, c=gmm_labels, cmap='viridis', s=40) 
+
+plt.title('GMM Clustering')
+
+plt.xlabel('Petal Length') 
+
+plt.ylabel('Petal Width')
+ 
+plt.show()
+ 
+print('Observation: The GMM using EM algorithm-based clustering matched the true labels more closely than the Kmeans.')
