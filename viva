@@ -1,0 +1,19 @@
+steps of kmeans algo
+choose the no of clusters k
+select k random points from centroids
+assign all the points to the closed cluster centroid
+recompute the centroid of newly formed cluster 
+repeat step 3 to 4
+steps in em algorithm 
+e step estimate the missing or latent variables
+m step optimize the parameter of the model to explain data
+steps in knn algorithm
+select no of k neighbour
+calc euclidean distance of k no of neighbour
+select the k nearest neighbour as per calculation
+among the neighbour count no of cluster points in each category
+assign new datapoints to  tht category for which no of neighbour is max
+kmean                             knn
+unsupervised                      supervised
+clustering                        classification
+k's no of cluster                 k no of neighbour
