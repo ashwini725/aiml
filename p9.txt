@@ -1,72 +1,49 @@
-
-import matplotlib.pyplot as plt 
-
-from sklearn import datasets 
-
-from sklearn.cluster import KMeans 
-
-from sklearn import preprocessing
-
-from sklearn.mixture import GaussianMixture 
-
+import matplotlib.pyplot as plt
 import pandas as pd
-
 import numpy as np
  
-iris = datasets.load_iris()
-
-X = pd.DataFrame(iris.data, columns=['Sepal_Length', 'Sepal_Width', 'Petal_Length', 'Petal_Width'])
-
-y = pd.DataFrame(iris.target, columns=['Targets'])
+def kernel(point, xmat, k):
+    m,n = np.shape(xmat)
+    weights = np.mat(np.eye((m)))
+    for j in range(m):
+        diff = point - X[j]
+        weights[j,j] = np.exp(diff*diff.T/(-2.0*k**2))
+    return weights
  
-plt.figure(figsize=(14, 7))
+def localWeight(point, xmat, ymat, k):
+    wei = kernel(point,xmat,k)
+    W = (X.T*(wei*X)).I*(X.T*(wei*ymat.T))
+    return W
  
-plt.subplot(1, 3, 1)
-
-plt.scatter(X.Petal_Length, X.Petal_Width, c=iris.target, cmap='viridis', s=40) 
-
-plt.title('Real Clusters')
-
-plt.xlabel('Petal Length') 
-
-plt.ylabel('Petal Width')
+def localWeightRegression(xmat, ymat, k):
+    m,n = np.shape(xmat)
+    ypred = np.zeros(m)
+    for i in range(m):
+        ypred[i] = xmat[i]*localWeight(xmat[i],xmat,ymat,k)
+    return ypred
  
-model = KMeans(n_clusters=3)
 
-model.fit(X)
-
-kmeans_labels = model.labels_
+data = pd.read_csv('10-dataset.csv')
+bill = np.array(data.total_bill)
+tip = np.array(data.tip)
  
-plt.subplot(1, 3, 2)
 
-plt.scatter(X.Petal_Length, X.Petal_Width, c=kmeans_labels, cmap='viridis', s=40) 
-
-plt.title('K-Means Clustering')
-
-plt.xlabel('Petal Length') 
-
-plt.ylabel('Petal Width')
+mbill = np.mat(bill)
+mtip = np.mat(tip)
+m= np.shape(mbill)[1]
  
-scaler = preprocessing.StandardScaler() 
-
-xs = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
-
-gmm = GaussianMixture(n_components=3) 
-
-gmm.fit(xs)
-
-gmm_labels = gmm.predict(xs)
+one = np.mat(np.ones(m))
+X = np.hstack((one.T,mbill.T))
  
-plt.subplot(1, 3, 3)
 
-plt.scatter(X.Petal_Length, X.Petal_Width, c=gmm_labels, cmap='viridis', s=40) 
-
-plt.title('GMM Clustering')
-
-plt.xlabel('Petal Length') 
-
-plt.ylabel('Petal Width')
+ypred = localWeightRegression(X,mtip,0.5)
+SortIndex = X[:,1].argsort(0)
+xsort = X[SortIndex][:,0]
  
-plt.show()
- 
-print('Observation: The GMM using EM algorithm-based clustering matched the true labels more closely than the Kmeans.')
+fig = plt.figure()
+ax = fig.add_subplot(1,1,1)
+ax.scatter(bill,tip, color='green')
+ax.plot(xsort[:,1],ypred[SortIndex], color = 'red', linewidth=5)
+plt.xlabel('Total bill')
+plt.ylabel('Tip')
+plt.show();
